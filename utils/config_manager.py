@@ -24,3 +24,11 @@ def save_config(config):
     ensure_config_dir()
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=4)
+
+def get_config():
+    config = load_config()
+    return {
+        "api_id": config.get("api_id"),
+        "api_hash": config.get("api_hash"),
+        "session_name": SESSION_FILE
+    }
