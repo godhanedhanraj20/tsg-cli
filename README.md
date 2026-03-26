@@ -1,205 +1,180 @@
 # TSG-CLI (Telegram Storage CLI)
 
-A fast, lightweight, and local-first CLI tool that uses Telegram "Saved Messages" as an unlimited cloud storage drive. Built entirely on top of Pyrogram.
-
-No subscriptions. No databases. No web dashboards. Just your terminal and your files.
+A powerful CLI tool that transforms Telegram Saved Messages into a personal cloud storage system, providing a robust virtual file system entirely within Telegram.
 
 ---
 
-## 🌟 Features
+## Features
 
-### ⚡ Batch Operations
-* Batch upload (multiple files)
-* Batch download (multiple IDs)
-* Folder upload (recursive scanning)
-* Mixed input (files + folders)
+**Virtual Folder System**
+* **Path-based structure:** Implements a true virtual file system using absolute paths (e.g., `/anime/naruto/`, `/docs/work/`).
+* **Folder creation:** `mkdir` command to initialize new virtual directories.
+* **File organization:** `move` command to reliably shift files between virtual directories.
+* **Direct upload:** Target specific directories on upload using the `--path` argument.
+* **Navigation:** `ls` command to list contents of specific virtual directories.
 
-### 🔄 Reliability
-* Automatic retry for failed uploads and downloads
-* Resume downloads after interruption or network failure
-* Safe interruption handling (Ctrl+C safely pauses without corruption)
-* Graceful network recovery
+**Upload System**
+* Supports single file, batch file, and recursive folder uploads.
+* Accept mixed input streams (files and directories simultaneously).
+* Target specific virtual paths directly using `--path`.
 
-### 🧠 Organization
-* Tagging system for metadata grouping
-* Virtual folders (via tag filtering)
-* Virtual file renaming layer
-* Server-side pagination and local filtering
+**Download System**
+* Single and batch downloading capabilities.
+* Safe handling of large files.
+* Built-in resume support with checkpoints.
+* Automated retry logic for network instability.
 
-### 🎯 CLI Experience
-* Clean, structured tabular output
-* Real-time progress tracking with speeds and checkpoints
-* Consistent command feedback with summaries
-* Clear, actionable success/error reporting
+**Metadata System**
+* Apply tags for secondary grouping and categorization.
+* Support for custom file renaming during upload.
+* Local metadata tracking stored in `~/.tsg-cli/metadata.json`.
 
-### 🏗️ Architecture
-* Clean service layer (business logic only, no UI/styling concerns)
-* Decoupled CLI layer (handles all user interaction and presentation)
-* Structured data returned from core services
-* API-ready and Web UI expandable
+**Search System**
+* Name-based search queries.
+* Robust filtering by tags and file types.
+* Clean, paginated results with sorting capabilities.
+
+**CLI UX**
+* Clean, structured table outputs for lists and searches.
+* Real-time progress bars with upload/download speeds.
+* Clear, structured success and error messaging.
+
+**Backup & Restore**
+* Securely backup the local metadata state (`metadata.json`) directly to Telegram.
+* Seamlessly restore your file structure from Telegram backups to any new machine.
 
 ---
 
-## 🚀 Getting Started
+## Installation
 
 ### Prerequisites
 
-* Python 3.9+
-* Telegram API ID and Hash (from [my.telegram.org/apps](https://my.telegram.org/apps))
-* Your phone number
+You will need Python 3.9+ and your Telegram API credentials.
 
-### Installation
+1. Go to [my.telegram.org](https://my.telegram.org) and log in.
+2. Navigate to "API development tools" and fill out the form to create an application.
+3. Save your `API_ID` and `API_HASH`.
 
-1. Clone the repository
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone <repository_url>
+   cd tsg-cli
+   ```
+
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Run the login setup:
-   ```bash
-   python main.py login
-   ```
-   *You will be prompted for your API ID, API Hash, phone number, and OTP code.*
+
+3. Configure your credentials when running the tool for the first time. The CLI will prompt you for your `API_ID`, `API_HASH`, and phone number to authenticate your Telegram session.
 
 ---
 
-## 📖 Usage Guide
+## Usage
 
-### 📤 Uploading Files
+Interact with the CLI by executing `main.py`.
 
-Upload a single file:
+### Virtual Folder Examples
+
+**Create a new virtual folder:**
 ```bash
-python main.py upload my_document.pdf
+python main.py mkdir /documents/work
 ```
 
-**Batch Upload** (multiple files):
+**Upload directly to a virtual folder:**
 ```bash
-python main.py upload file1.mp4 file2.mp4
+python main.py upload report.pdf --path /documents/work/
 ```
 
-**Folder Upload** (recursive):
+**List folder contents:**
 ```bash
-python main.py upload ./movies/
+python main.py ls /documents/work/
 ```
 
-**Mixed Input** (files and folders):
+**Move an existing file into a folder:**
 ```bash
-python main.py upload ./movies file.txt
+python main.py move file_id_123 /documents/archive/
 ```
 
-*Note: Directories are scanned recursively. Missing files are safely skipped with clear warnings.*
+### General Usage Examples
 
-### 📄 Listing Files
-
-List the 50 most recent files:
+**Upload a single file with tags:**
 ```bash
-python main.py list
+python main.py upload my_video.mp4 --tags "video, holiday"
 ```
 
-Filter by type or tags:
+**Upload an entire local directory:**
 ```bash
-python main.py list --type video --tag anime
-python main.py list --limit 100 --page 2 --sort size
+python main.py upload ./my_photos/
 ```
 
-### 📥 Downloading Files
-
-Download a file by its ID (found via `list` or `search`):
-```bash
-python main.py download 12345
-```
-
-**Batch Download**:
-```bash
-python main.py download 12345 67890
-```
-
-**Custom Output Directory**:
-```bash
-python main.py download 12345 --output ./downloads
-```
-
-*Note: Interrupted downloads automatically resume. No need to restart large file downloads from scratch!*
-
-### 🔍 Searching
-
-Search by name (case-insensitive):
+**Search files by name:**
 ```bash
 python main.py search "report"
 ```
 
-Combine search with filters:
+**Download a file:**
 ```bash
-python main.py search "project" --tag work --type document
+python main.py download file_id_123
 ```
 
-### 🗑️ Deleting Files
-
-Delete one or multiple files by ID:
+**Backup your metadata to Telegram:**
 ```bash
-python main.py delete 12345
-python main.py delete 12345 67890
+python main.py backup
 ```
 
----
-
-## ⚡ Batch Workflow Example
-
+**Restore metadata from Telegram:**
 ```bash
-# Upload an entire folder
-python main.py upload ./anime/
-
-# Download multiple files at once
-python main.py download 246810 246811 246812
-
-# Tag multiple files simultaneously
-python main.py tag 246810,246811 add anime
+python main.py restore
 ```
 
 ---
 
-## 🧠 System Design
+## Architecture
 
-* **Telegram as the Database:** Files are stored directly as Telegram messages in your "Saved Messages".
-* **Unique IDs:** The File ID is simply the Telegram message ID.
-* **Local Metadata:** Tags and virtual names are stored locally in a `~/.tsg-cli/metadata.json` file.
-* **No Database Required:** Keeps the tool fast, portable, and impossible to desync.
-* **Clean Architecture:** The internal services handle logic entirely independent of the UI. The CLI handles all user formatting.
+TSG-CLI is designed with a robust, local-first architecture built entirely around the Telegram API, requiring no external databases.
 
----
-
-## 🛡️ Reliability Features
-
-* **Retry Loops:** Automatically attempts to recover from failed uploads/downloads due to Telegram CDN drops.
-* **Resume Support:** Downloads save `.checkpoint` files to resume large downloads exactly where they left off.
-* **Safe Interruption:** Pressing `Ctrl+C` flushes download buffers to disk to prevent corrupted partial files.
-* **Clean Errors:** No stack traces on expected network issues.
+* **CLI Layer:** Built with Typer for a clean, developer-friendly interface and input parsing.
+* **Service Layer:** Handles core business logic, metadata parsing, and virtual path mapping.
+* **Utils Layer:** Provides shared utilities for formatting, progress bars, and filesystem interactions.
+* **Telegram Client Abstraction:** Manages the underlying connection and data transfer using Telethon/Pyrogram, abstracting the complexity of the MTProto protocol.
 
 ---
 
-## ⚠️ Limitations
+## Reliability
 
-* **Upload Limits:**
-  * Free accounts: up to **2GB** per file
-  * Premium accounts: up to **4GB** per file
-* Files larger than this already existing in Telegram can still be downloaded without issue.
-* Files must be uploaded manually through the CLI to ensure proper internal metadata is generated.
+Designed to handle unreliable networks and massive files gracefully.
 
----
-
-## 💡 Pro Tips
-
-* Use **folder upload** for bulk operations and easy backups.
-* Use **batch download** to grab entire collections efficiently.
-* Combine `search` + `--tag` for powerful, instant filtering.
-* Always run `python main.py backup` to save your metadata before switching systems!
+* **Retry Logic:** Automatic backoff and retry mechanisms for API rate limits and connection drops.
+* **Resume Support:** Downloads can be safely paused and resumed.
+* **Safe Interruption:** Gracefully handles `Ctrl+C` (SIGINT) to ensure metadata corruption is prevented.
+* **Checkpoint System:** Chunked uploads and downloads track progress to avoid restarting large transfers from zero.
 
 ---
 
-## 🚀 Status
+## Limitations
 
-✅ Phase 1 — Core CLI  
-✅ Phase 2 — Search & Filtering  
-✅ Phase 3 — Organization + Backup  
-✅ Phase 4 — Batch + Reliability + UX  
-✅ Architecture — Clean separation (API-ready)  
+* **File Size Limits:** Bound by standard Telegram limitations (2GB for standard users, 4GB for Telegram Premium).
+* **Manual Operation:** All uploads must be initiated manually via the CLI; it does not currently support automated folder syncing (e.g., watching a local folder for changes).
+
+---
+
+## Status
+
+**Production-ready CLI (actively evolving)**
+
+The core systems are stable and ready for daily use, but the project is under active development. Expect regular updates and new features.
+
+---
+
+## Contributing
+
+Pull Requests are welcome! If you encounter an issue or have a feature request, please open an issue on the repository.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
