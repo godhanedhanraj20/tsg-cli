@@ -1,10 +1,9 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from api.routes import auth, files, folders
 
-app = FastAPI(title="TSG-CLI API", version="1.0")
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     from api.client_manager import get_shared_client
     try:
         await get_shared_client()
@@ -12,14 +11,16 @@ async def startup():
         # Ignore startup failures to allow health check to pass without config
         pass
 
-@app.on_event("shutdown")
-async def shutdown():
+    yield
+
     from api.client_manager import _client
     if _client and getattr(_client, "is_connected", False):
         try:
             await _client.stop()
         except Exception:
             pass
+
+app = FastAPI(title="TSG-CLI API", version="1.0", lifespan=lifespan)
 
 @app.get("/health")
 async def health():
