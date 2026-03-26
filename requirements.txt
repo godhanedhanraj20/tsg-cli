@@ -7,3 +7,6 @@ pytest-asyncio
 nest_asyncio
 fastapi
 uvicorn
+aiofiles
+python-multipart
+httpx
